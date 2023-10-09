@@ -36,7 +36,7 @@ public class Solitaire {
 			}
 		}
 		while(deck.size() != 0){
-			int randIndex = (int) Math.random()*deck.size();
+			int randIndex = (int) (Math.random()*deck.size());
 			stock.push(deck.remove(randIndex));
 		}
 	}
@@ -67,7 +67,7 @@ public class Solitaire {
 	}
 	public void dealThreeCards(){
 		int count = 0;
-		while(!stock.isEmpty() && count <= 3){
+		while(!stock.isEmpty() && count < 3){
 			Card card = stock.pop();
 			card.turnUp();
 			waste.push(card);
@@ -75,7 +75,11 @@ public class Solitaire {
 		}
 	}
 	public void resetStock(){
-		
+		for(int i = 0; i < waste.size(); i++){
+			Card card = waste.pop();
+			card.turnDown();
+			stock.push(card);
+		}
 	}
 
 	// precondition: 0 <= index < 4
@@ -95,13 +99,21 @@ public class Solitaire {
 
 	// called when the stock is clicked
 	public void stockClicked() {
-		
+		if(!display.isWasteSelected() && !display.isPileSelected()){
+			if(stock.size() > 0){
+				dealThreeCards();
+			} else resetStock();
+		}
 		System.out.println("stock clicked");
 	}
 
 	// called when the waste is clicked
 	public void wasteClicked() {
 		// IMPLEMENT ME
+		if(!display.isPileSelected()){
+			if(display.isWasteSelected()) display.unselect();
+			else if(!waste.isEmpty()) display.selectWaste();
+		}
 		System.out.println("waste clicked");
 	}
 
@@ -115,7 +127,34 @@ public class Solitaire {
 	// precondition: 0 <= index < 7
 	// called when given pile is clicked
 	public void pileClicked(int index) {
+		if(!display.isWasteSelected()){
+			if(display.isPileSelected()){
+				if(display.selectedPile() == index) display.unselect();
+				else display.selectPile(index);
+			} else display.selectPile(index);
+		} 
+		if(waste.isEmpty()) return;
 		// IMPLEMENT ME
+		Card card = waste.peek();
+		if(canAddToPile(card, index)){
+			if(display.isWasteSelected()){
+				card = waste.pop();
+				piles[index].push(card);
+				display.unselect();
+			}
+		}
 		System.out.println("pile #" + index + " clicked");
+	}
+	private boolean canAddToPile(Card card, int index){
+		Card topCard = piles[index].peek();
+		if(!topCard.isFaceUp && card.suit.equals("k")) return true; 
+		if(topCard.rank == 1) return false;
+		if(topCard.isRed()){
+			return (!card.isRed()) && card.rank == topCard.rank - 1;
+		} 
+		if(!topCard.isRed()){
+			return (card.isRed()) && card.rank == topCard.rank - 1;
+		} 
+		return true;
 	}
 }
