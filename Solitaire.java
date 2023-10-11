@@ -4,6 +4,7 @@ public class Solitaire {
 	public static void main(String[] args) {
 		new Solitaire();
 	}
+
 	private Stack<Card> stock;
 	private Stack<Card> waste;
 	private Stack<Card>[] foundations;
@@ -27,78 +28,81 @@ public class Solitaire {
 		deal();
 	}
 
-	public void createStock(){
+	public void createStock() {
 		deck = new ArrayList<Card>();
-		String[] suits = new String[]{"h", "d", "c", "s"};
-		for(int rank = 1; rank <= 13; rank++){
-			for(int suitIndex = 0; suitIndex <= 3; suitIndex++){
-				deck.add(new Card(rank, suits[suitIndex]));
+		String[] suits = new String[] { "h", "d", "c", "s" };
+		for (int rank = 1; rank <= 13; rank++) {
+			for (String suit : suits) {
+				deck.add(new Card(rank, suit));
 			}
 		}
-		while(deck.size() != 0){
-			int randIndex = (int) (Math.random()*deck.size());
+		while (deck.size() != 0) {
+			int randIndex = (int) (Math.random() * deck.size());
 			stock.push(deck.remove(randIndex));
 		}
 	}
+
 	// returns the card on top of the stock,
 	// or null if the stock is empty
 	public Card getStockCard() {
-		if (stock.isEmpty())
-			return null;
-		return stock.peek();
+		return stock.isEmpty() ? null : stock.peek();
 	}
 
 	// returns the card on top of the waste,
 	// or null if the waste is empty
 	public Card getWasteCard() {
-		if (waste.isEmpty())
-			return null;
-		return waste.peek();
+		return waste.isEmpty() ? null : waste.peek();
 	}
-	public void deal(){
-		for(int i = 0; i < piles.length; i++){
+
+	public void deal() {
+		for (int i = 0; i < piles.length; i++) {
 			int pileCount = i + 1;
-			for(int j = 0; j < pileCount; j++){
+			for (int j = 0; j < pileCount; j++) {
 				piles[i].push(stock.pop());
 			}
 			piles[i].peek().turnUp();
 		}
 	}
-	public void dealThreeCards(){
+
+	public void dealThreeCards() {
 		int count = 0;
-		while(!stock.isEmpty() && count < 3){
+		while (!stock.isEmpty() && count < 3) {
 			Card card = stock.pop();
 			card.turnUp();
 			waste.push(card);
 			count++;
 		}
 	}
-	public void resetStock(){
-		while(!waste.isEmpty()){
+
+	public void resetStock() {
+		while (!waste.isEmpty()) {
 			Card card = waste.pop();
 			card.turnDown();
 			stock.push(card);
 		}
 	}
+
 	// precondition: 0 <= index < 4
 	// postcondition: returns the card on top of the given
 	// foundation, or null if the foundation
 	// is empty
 	public Card getFoundationCard(int index) {
-		if(foundations[index].isEmpty()) {return null;}
-		return foundations[index].peek();
+		return foundations[index].isEmpty() ? null : foundations[index].peek();
 	}
+
 	// precondition: 0 <= index < 7
 	// postcondition: returns a reference to the given pile
 	public Stack<Card> getPile(int index) {
 		return piles[index];
 	}
+
 	// called when the stock is clicked
 	public void stockClicked() {
-		if(!display.isWasteSelected() && !display.isPileSelected()){
-			if(stock.size() > 0){
+		if (!display.isWasteSelected() && !display.isPileSelected()) {
+			if (stock.size() > 0) {
 				dealThreeCards();
-			} else resetStock();
+			} else
+				resetStock();
 		}
 		System.out.println("stock clicked");
 	}
@@ -106,85 +110,94 @@ public class Solitaire {
 	// called when the waste is clicked
 	public void wasteClicked() {
 		// IMPLEMENT ME
-		if(!display.isPileSelected()){
-			if(display.isWasteSelected()) display.unselect();
-			else if(!waste.isEmpty()) display.selectWaste();
+		if (!display.isPileSelected()) {
+			if (display.isWasteSelected())
+				display.unselect();
+			else if (!waste.isEmpty())
+				display.selectWaste();
 		}
 		System.out.println("waste clicked");
 	}
+
 	// precondition: 0 <= index < 4
 	// called when given foundation is clicked
 	public void foundationClicked(int index) {
 		System.out.println("foundation #" + index + " clicked");
-		if(display.isWasteSelected()){
-			if(canAddToFoundation(getWasteCard(), index)){
+		if (display.isWasteSelected()) {
+			if (canAddToFoundation(getWasteCard(), index)) {
 				foundations[index].push(waste.pop());
 				display.unselect();
 			}
 			return;
 		}
-		if(display.isPileSelected()){
+		if (display.isPileSelected()) {
 			Stack<Card> currentPile = piles[display.selectedPile()];
 			Card topCard = currentPile.peek();
-			if(canAddToFoundation(topCard, index)){
-				foundations[index].push(currentPile .pop());
+			if (canAddToFoundation(topCard, index)) {
+				foundations[index].push(currentPile.pop());
 				display.unselect();
 			}
 			return;
 		}
 	}
+
 	// precondition: 0 <= index < 7
 	// called when given pile is clicked
 	public void pileClicked(int index) {
 		System.out.println("pile #" + index + " clicked");
-		if(display.isWasteSelected()){
+		if (display.isWasteSelected()) {
 			Card card = waste.peek();
-			if(canAddToPile(card, index)){
+			if (canAddToPile(card, index)) {
 				piles[index].push(waste.pop());
 				display.unselect();
 			}
 			return;
 		}
-		if(display.isPileSelected()){
-			if(display.selectedPile() == index) display.unselect();
-			else addToPile(removeFaceUpCards(display.selectedPile()), index);
+		if (display.isPileSelected()) {
+			if (display.selectedPile() == index)
+				display.unselect();
+			else
+				addToPile(removeFaceUpCards(display.selectedPile()), index);
 			return;
 		}
 		Card topCard = piles[index].peek();
-		if(!topCard.isFaceUp) {
-			topCard.turnUp(); 
-			return;}
+		if (!topCard.isFaceUp) {
+			topCard.turnUp();
+			return;
+		}
 		display.selectPile(index);
 	}
-	private boolean canAddToPile(Card card, int index){
+
+	private boolean canAddToPile(Card card, int index) {
 		Card topCard = piles[index].peek();
-		if(!topCard.isFaceUp && card.rank == 13) return true; 
-		if(topCard.rank == 1) return false;
-		if(topCard.isRed()){
-			return (!card.isRed()) && card.rank == topCard.rank - 1;
-		} 
-		if(!topCard.isRed()){
-			return (card.isRed()) && card.rank == topCard.rank - 1;
-		} 
-		return false;
+		if (!topCard.isFaceUp && card.rank == 13)
+			return true;
+		if (topCard.rank == 1)
+			return false;
+		return topCard.isRed() != card.isRed() && card.rank == topCard.rank - 1;
 	}
-	private Stack<Card> removeFaceUpCards(int index){
+
+	private Stack<Card> removeFaceUpCards(int index) {
 		Stack<Card> pile = piles[index];
 		Stack<Card> ret = new Stack<>();
-		while(!pile.isEmpty() && pile.peek().isFaceUp()){
+		while (!pile.isEmpty() && pile.peek().isFaceUp()) {
 			ret.push(pile.pop());
-		} return ret;
-	}
-	private void addToPile(Stack<Card> cards, int index){
-		int pileIndex = (canAddToPile(cards.peek(), index)) ? index : display.selectedPile();
-		while(!cards.isEmpty()) {piles[pileIndex].push(cards.pop());}
-		display.unselect();
-}
-	private boolean canAddToFoundation(Card card, int index){
-		if(foundations[index].isEmpty()){
-			return (card.rank == 1);
 		}
-		Card topCard = foundations[index].peek();
-		return (topCard.suit.equals(card.suit) && card.rank == topCard.rank + 1);
+		return ret;
+	}
+
+	private void addToPile(Stack<Card> cards, int index) {
+		int pileIndex = (canAddToPile(cards.peek(), index)) ? index : display.selectedPile();
+		while (!cards.isEmpty()) {
+			piles[pileIndex].push(cards.pop());
+		}
+		display.unselect();
+	}
+
+	private boolean canAddToFoundation(Card card, int index) {
+		return foundations[index].isEmpty()
+				? (card.rank == 1)
+				: (foundations[index].peek().getSuit().equals(card.getSuit())
+						&& card.rank == foundations[index].peek().rank + 1);
 	}
 }
