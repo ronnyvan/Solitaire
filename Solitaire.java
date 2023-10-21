@@ -168,10 +168,11 @@ public class Solitaire {
 		display.selectPile(index);
 	}
 
+	
 	private boolean canAddToPile(Card card, int index) {
-		Card topCard = piles[index].peek();
-		if (!topCard.isFaceUp && card.rank == 13)
-			return true;
+		Card topCard = (getPile(index).isEmpty()) ? null : getPile(index).peek();
+		if (topCard == null || !topCard.isFaceUp)
+			return (card.rank == 13);
 		if (topCard.rank == 1)
 			return false;
 		return topCard.isRed() != card.isRed() && card.rank == topCard.rank - 1;
